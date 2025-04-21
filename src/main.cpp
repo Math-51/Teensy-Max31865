@@ -19,12 +19,11 @@ byte faultRegister = 0;       // Variable to store MAX31865 fault resister if 10
 void setup() {
 
   Serial.begin(115200);
+  SPI.begin();          // Init SPI bus
 
   while (!Serial) {
     // wait for Arduino Serial Monitor to be ready
   }
-
-  Serial.println("Test point 1"); // Test point
 
   if (max31865Init(MAX31865_CS_Pin, WIRE, FILTER_FREQ, REF_RESISTOR, R_NOMINAL) == 0) // Init MAX31865 and configure the RTD wires number and MAX31865 filter frequency
   {
@@ -41,6 +40,8 @@ void loop() {
   max31865ReadRTD(&rtdData, &faultBit);   // Read MAX31865 RTD resistance register
 
   max31865Calc(rtdData, &ratio, &temperature, &resistance); // From the 15bits RTD resistance data of MAX31865 RTD resistance registers, convert the ratio in float, calculate the resistance value and the temperature value
+
+  max31865ReadFault(&faultRegister);
 
   Serial.print("Temperature = ");
   Serial.println(temperature); // Send temperature value in float to serial

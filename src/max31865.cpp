@@ -23,8 +23,6 @@ Note : this function shall be call one time, to configure the MAX31865
 */
 bool max31865Init(int cs, int wire, int freq, float ref, float rtd)
 {
-	Serial.println("Test point 2"); // Test point
-
 	max31865CS = cs;
 	refResistor = ref;
 	RTDnominal = rtd;
@@ -56,12 +54,8 @@ bool max31865Init(int cs, int wire, int freq, float ref, float rtd)
 	config1Shot = configInit | 0b10100000;		// To start a convertion, configuration register bit 5 shall be flip to 1 : define the basic configuration register with bit 7 to 1 (VBIAS on) and bit 5 to 1
 	configFaultClear = configInit | 0b00000010; // To clear fault register, configuration register bit 1 shall be flip to 1 : define the basic configuration register with bit 1 to 1
 
-	Serial.println("Test point 3"); // Test point
-
 	max31865Write(REGISTER_CONFIG, &configInit); // Send to MAX31865 configuration register the basic configuration byte
 
-	Serial.println("Test point 4"); // Test point
-	
 	byte configInitRead = 0; // Variable to store the retrieve of the MAX31865 configuration register
 
 	max31865Read8(REGISTER_CONFIG, &configInitRead); // Request to MAX31865 the current configuration resgister and store it in the configInitRead variable
@@ -168,12 +162,9 @@ Note : pass to the function the READ adress of the register, it will be automati
 void max31865Write(byte adress, byte *data)
 {
 	adress |= 0x80;							// Write adress register is the same adress than READ, with the MSB flip to 1
-	Serial.println("Test point 3bis"); 		// Test point
 	SPI.beginTransaction(max31865Settting); // Initializes the SPI bus with adapted parameters for transmission to MAX31865
-	Serial.println("Test point 3ter"); 		// Test point
 	digitalWrite(max31865CS, LOW);			// CS pin of MAX31865 set to LOW
 	SPI.transfer(adress);					// Write the register adress on the bus
-	Serial.println("Test point 3quater"); 	// Test point
 	SPI.transfer(*data);					// Write the data on the bus
 	digitalWrite(max31865CS, HIGH);			// CS pin of MAX31865 set to HIGH
 	SPI.endTransaction();					// SPI bus release, to make it available for other transmisions
@@ -199,7 +190,7 @@ For a multiple-byte transfer, multiple bytes can be read after the address has b
 - Parameter adress : pass to the function the MAX31865 adress register where multiple-byte read data shall start
 - Parameter *data :  a pointer to the adress of the variable where the received data shall be stored (shall be a word)
 */
-void max31865Read16(byte adress, unsigned int *data)
+void max31865Read16(byte adress, word *data)
 {
 	byte dataMSB = 0x0;						// Variable to store the MSB part of the data
 	byte dataLSB = 0x0;						// Variable to store the LSB part of the data
