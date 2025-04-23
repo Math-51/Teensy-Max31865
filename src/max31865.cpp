@@ -32,7 +32,7 @@ bool max31865Init(int cs, int wire, int freq, float ref, float rtd)
 
 	if (wire == 3)
 		configInit |= 0b00010000;	 // If RTD sensor connected to MAX31865 is a 3 wires RTD, bit 4 of configuration register shall be flip to 1
-	else if (wire != 2 || wire != 4) // If the number passed to the function is different from 3 but also different from 2 & 4, the parameter is wrong
+	else if (wire != 2 && wire != 4) // If the number passed to the function is different from 3 but also different from 2 & 4, the parameter is wrong
 	{
 		Serial.println("Wire number error"); // Send a serial message to inform that the wire parameter is wrong
 		while (1)
