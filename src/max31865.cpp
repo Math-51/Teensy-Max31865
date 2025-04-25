@@ -11,6 +11,11 @@ byte configFaultClear = 0b0; // Config byte that will clear fault register. The 
 float refResistor = 0;		 // Reference resistor value for calculation of current RTD resistance value
 float RTDnominal = 0;		 // Nominal 0-degrees-C resistance of the RTD for convertion of RTD resistance value into temperature
 
+static float ka = 4.261676e-7;
+static float kb = 1.1252e-5;
+static float kc = 0.00105387;
+static float kd = 2.558959;
+
 SPISettings max31865Settting(1000000, MSBFIRST, SPI_MODE1); // MAX31865 SPI settings
 
 /* Function to initialize and configure the MAX31865
@@ -135,6 +140,32 @@ void max31865Calc(float data, float *rt, float *temp, float *R)
 	*temp -= 2.8183e-8 * rpoly;
 	rpoly *= data; // ^5
 	*temp += 1.5243e-10 * rpoly;
+}
+
+void max31865CalcAlt(float data, float *rt, float *temp, float *R)
+{
+	data /= 32768; // Convert RTD resistance data into ratio in float
+
+	*rt = data; // Store the ratio in float into the variable pointed by the pointer
+
+	data *= refResistor; // Convert the ratio into resistance value
+
+	*R = data; // Store resistance value into the variable pointed by the pointer
+
+	if ((data-100) > 0)
+	{
+		float a1 = data - 100; // Calculate the difference between the resistance value and 100 ohm
+		float a2 = a1 * a1;	 // Calculate the square of the difference
+		*temp = kd*a1+kc*a2; // Calculate the temperature value from the resistance value using Callendar-Van Dusen equation
+	}
+	else
+	{
+		float a1 = data - 100; // Calculate the difference between the resistance value and 100 ohm
+		float a2 = a1 * a1;	 // Calculate the square of the difference
+		float a3 = a1 * a2;	 // Calculate the cube of the difference
+		float a4 = a1 * a3;	 // Calculate the 4th power of the difference
+		*temp = kd*a1+kc*a2+kb*a3+ka*a4; // Calculate the temperature value from the resistance value using Callendar-Van Dusen equation
+	}
 }
 
 /* Function to read the MAX31865 fault register

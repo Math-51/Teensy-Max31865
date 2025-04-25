@@ -45,8 +45,15 @@ void loop() {
 
   Serial.print("Temperature = ");
   Serial.println(temperature); // Send temperature value in float to serial
-  Serial.print("Fault = ");
+
+  max31865CalcAlt(rtdData, &ratio, &temperature, &resistance); // From the 15bits RTD resistance data of MAX31865 RTD resistance registers, convert the ratio in float, calculate the resistance value and the temperature value using alternative method
+  Serial.print("Temperature (alt) = ");
+  Serial.println(temperature); // Send temperature value in float to serial
+
+  Serial.print("Fault = 0x");
   Serial.println(faultRegister, HEX); // Send fault register value in HEX to serial
+
+  max31865ClearFaultRegister(); // Clear the fault register of MAX31865
 
   delay(SAMPLE_INTERVAL);
 

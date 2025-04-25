@@ -27,6 +27,7 @@ extern float RTDnominal;      // Nominal 0-degrees-C resistance of the RTD for c
 bool max31865Init(int cs = 23, int wire = 3, int freq = 50, float ref = 4300, float rtd = 1000);
 void max31865ReadRTD(word *rtd, bool *fault);
 void max31865Calc(float data, float *rt, float *temp, float *R);
+void max31865CalcAlt(float data, float *rt, float *temp, float *R);
 void max31865ReadFault(byte *faultData);
 void max31865ClearFaultRegister();
 void max31865Write(byte adress, byte *data);
