@@ -1,13 +1,12 @@
 #include <Arduino.h>
-#include <SPI.h>
 #include "max31865.h"
 
-#define MAX31865_CS_Pin 10    // The CS Pin for MAX31865: to change depending on PIN number of microcontroler used as MAX31865 CS pin
-#define WIRE 3                // The number of wires of the RTD (2, 3 or 4, depending on the wires number of the RTD sensor)
-#define FILTER_FREQ 50        // Filter frequency of the MAX31865 (50Hz or 60Hz)
-#define REF_RESISTOR 4300.0   // The value of the Rref resistor. For Adafruit MAX31865 breakout board, use 430.0 for PT100 board and 4300.0 for PT1000 board
-#define R_NOMINAL 1000.0      // The 'nominal' 0-degrees-C resistance of the sensor: 100.0 for PT100, 1000.0 for PT1000
-#define SAMPLE_INTERVAL 500   // The interval between 2 temperature measurement
+#define MAX31865_CS_Pin 10     // The CS Pin for MAX31865: to change depending on PIN number of microcontroler used as MAX31865 CS pin
+#define WIRE 2                 // The number of wires of the RTD (2, 3 or 4, depending on the wires number of the RTD sensor)
+#define FILTER_FREQ 50         // Filter frequency of the MAX31865 (50Hz or 60Hz)
+#define REF_RESISTOR 430.0     // The value of the Rref resistor. For Adafruit MAX31865 breakout board, use 430.0 for PT100 board and 4300.0 for PT1000 board
+#define R_NOMINAL 100.0        // The 'nominal' 0-degrees-C resistance of the sensor: 100.0 for PT100, 1000.0 for PT1000
+#define SAMPLE_INTERVAL 500    // The interval between 2 temperature measurement
 
 word rtdData = 0;             // Variable to store last readed MAX31865 RTD register RTD resistance data (RTD MSB resister and RTD LSB register bit 7 to 1)
 bool faultBit = 0;            // Variable to store last readed RTD register fault bit (bit 0 of RTD LSB register)
@@ -16,45 +15,45 @@ float resistance = 0;         // Variable to store the last RTD resistance value
 float temperature = 0;        // Variable to store the last temperature value calculated from resistance value
 byte faultRegister = 0;       // Variable to store MAX31865 fault resister if 10 concecutives faults are detected
 
+Max31865 thermo(MAX31865_CS_Pin); // Create an object of Max31865 class
+
 void setup() {
+    Serial.begin(115200);
+    
+    while (!Serial) {
+        // wait for Arduino Serial Monitor to be ready
+    }
 
-  Serial.begin(115200);
-  SPI.begin();          // Init SPI bus
-
-  while (!Serial) {
-    // wait for Arduino Serial Monitor to be ready
-  }
-
-  if (max31865Init(MAX31865_CS_Pin, WIRE, FILTER_FREQ, REF_RESISTOR, R_NOMINAL) == 0) // Init MAX31865 and configure the RTD wires number and MAX31865 filter frequency
-  {
-    while (1)
-    Serial.println("MAX31865 Init fail"); // If max31865Init() function return 0, the init of MAX31865 has failed: send a serial message to inform that init as failed
-    delay(1000); // If init failed, stop program execution here
-  }
-  Serial.println("MAX31865 init OK"); // If MAX31865 init succeed , send a serial message to confirm the init of MAX31865
+    if (!thermo.init(WIRE, FILTER_FREQ, REF_RESISTOR, R_NOMINAL)) { // Use the init method of the thermo object
+        Serial.println("MAX31865 Init fail");
+        while (1) {
+            delay(1000); // If init failed, stop program execution here
+        }
+    }
+    Serial.println("MAX31865 init OK"); // If MAX31865 init succeed , send a serial message to confirm the init of MAX31865
 
 }
 
 void loop() {
 
-  max31865ReadRTD(&rtdData, &faultBit);   // Read MAX31865 RTD resistance register
+    thermo.readRTD(&rtdData, &faultBit); // Use the readRTD method of the thermo object
 
-  max31865Calc(rtdData, &ratio, &temperature, &resistance); // From the 15bits RTD resistance data of MAX31865 RTD resistance registers, convert the ratio in float, calculate the resistance value and the temperature value
+    thermo.calculate(rtdData, &ratio, &temperature, &resistance); // Use the calculate method of the thermo object
 
-  max31865ReadFault(&faultRegister);
+    thermo.readFault(&faultRegister); // Use the readFault method of the thermo object
 
-  Serial.print("Temperature = ");
-  Serial.println(temperature); // Send temperature value in float to serial
+    Serial.print("Temperature = ");
+    Serial.println(temperature); // Send temperature value in float to serial
 
-  max31865CalcAlt(rtdData, &ratio, &temperature, &resistance); // From the 15bits RTD resistance data of MAX31865 RTD resistance registers, convert the ratio in float, calculate the resistance value and the temperature value using alternative method
-  Serial.print("Temperature (alt) = ");
-  Serial.println(temperature); // Send temperature value in float to serial
+    thermo.calculateAlt(rtdData, &ratio, &temperature, &resistance); // Use the calculateAlt method of the thermo object
+    Serial.print("Temperature (alt) = ");
+    Serial.println(temperature); // Send temperature value in float to serial
 
-  Serial.print("Fault = 0x");
-  Serial.println(faultRegister, HEX); // Send fault register value in HEX to serial
+    Serial.print("Fault = 0x");
+    Serial.println(faultRegister, HEX); // Send fault register value in HEX to serial
 
-  max31865ClearFaultRegister(); // Clear the fault register of MAX31865
+    thermo.clearFaultRegister(); // Use the clearFaultRegister method of the thermo object
 
-  delay(SAMPLE_INTERVAL);
+    delay(SAMPLE_INTERVAL);
 
 }
