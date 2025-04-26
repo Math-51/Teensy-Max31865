@@ -1,8 +1,8 @@
 #include "max31865.h"
 
-Max31865::Max31865(int cs, float refResistor, float rtdNominal) : m_cs(cs), m_configInit(0b0), m_configVbias(0b0), m_config1Shot(0b0), m_configFaultClear(0b0), m_refResistor(refResistor), m_rtdNominal(rtdNominal), m_max31865Setting(1000000, MSBFIRST, SPI_MODE1) {}
+Max31865::Max31865(uint8_t cs, float refResistor, float rtdNominal) : m_cs(cs), m_configInit(0b0), m_configVbias(0b0), m_config1Shot(0b0), m_configFaultClear(0b0), m_refResistor(refResistor), m_rtdNominal(rtdNominal), m_max31865Setting(1000000, MSBFIRST, SPI_MODE1) {}
 
-bool Max31865::config(int wire, int filterFreq) {
+bool Max31865::config(uint8_t wire, uint8_t filterFreq) {
 
     SPI.begin();
     pinMode(m_cs, OUTPUT);
@@ -27,14 +27,14 @@ bool Max31865::config(int wire, int filterFreq) {
 
     write(REGISTER_CONFIG, &m_configInit);
 
-    byte configInitRead = 0;
+    uint8_t configInitRead = 0;
     read8(REGISTER_CONFIG, &configInitRead);
 
     return m_configInit == configInitRead;
 }
 
-void Max31865::readRTD(word *rtd, bool *fault) {
-    word rtdRegister = 0x0;
+void Max31865::readRTD(uint16_t *rtd, bool *fault) {
+    uint16_t rtdRegister = 0x0;
     write(REGISTER_CONFIG, &m_configVbias);
     delay(10);
     write(REGISTER_CONFIG, &m_config1Shot);
@@ -45,11 +45,11 @@ void Max31865::readRTD(word *rtd, bool *fault) {
     *fault = rtdRegister & 0x1;
 }
 
-void Max31865::calculate(float data, float *rt, float *temp, float *R) {
+void Max31865::calculate(float data, float *ratio, float *temperature, float *R) {
     float Z1, Z2, Z3, Z4;
 
     data /= 32768;
-    *rt = data;
+    *ratio = data;
     data *= m_refResistor;
     *R = data;
 
@@ -58,10 +58,10 @@ void Max31865::calculate(float data, float *rt, float *temp, float *R) {
     Z3 = (4 * RTD_B) / m_rtdNominal;
     Z4 = 2 * RTD_B;
 
-    *temp = Z2 + (Z3 * data);
-    *temp = (sqrt(*temp) + Z1) / Z4;
+    *temperature = Z2 + (Z3 * data);
+    *temperature = (sqrt(*temperature) + Z1) / Z4;
 
-    if (*temp >= 0)
+    if (*temperature >= 0)
         return;
 
     data /= m_rtdNominal;
@@ -69,39 +69,38 @@ void Max31865::calculate(float data, float *rt, float *temp, float *R) {
 
     float rpoly = data;
 
-    *temp = -242.02;
-    *temp += 2.2228 * rpoly;
+    *temperature = -242.02;
+    *temperature += 2.2228 * rpoly;
     rpoly *= data;
-    *temp += 2.5859e-3 * rpoly;
+    *temperature += 2.5859e-3 * rpoly;
     rpoly *= data;
-    *temp -= 4.8260e-6 * rpoly;
+    *temperature -= 4.8260e-6 * rpoly;
     rpoly *= data;
-    *temp -= 2.8183e-8 * rpoly;
+    *temperature -= 2.8183e-8 * rpoly;
     rpoly *= data;
-    *temp += 1.5243e-10 * rpoly;
+    *temperature += 1.5243e-10 * rpoly;
 }
 
-void Max31865::calculateAlt(float data, float *rt, float *temp, float *R) {
+void Max31865::calculateAlt(float data, float *ratio, float *temperature, float *R) {
     data /= 32768;
-    *rt = data;
+    *ratio = data;
     data *= m_refResistor;
     *R = data;
 
+    float a1 = data - 100;
+    float a2 = a1 * a1;
+
     if ((data - 100) > 0) {
-        float a1 = data - 100;
-        float a2 = a1 * a1;
-        *temp = 2.558959 * a1 + 0.00105387 * a2;
+        *temperature = KD * a1 + KC * a2;
     } else {
-        float a1 = data - 100;
-        float a2 = a1 * a1;
         float a3 = a1 * a2;
         float a4 = a1 * a3;
-        *temp = 2.558959 * a1 + 0.00105387 * a2 + 1.1252e-5 * a3 + 4.261676e-7 * a4;
+        *temperature = KD * a1 + KC * a2 + KB * a3 + KA * a4;
     }
 }
 
-void Max31865::readFault(byte *faultData) {
-    byte faultValue = 0x0;
+void Max31865::readFault(uint8_t *faultData) {
+    uint8_t faultValue = 0x0;
    	read8(REGISTER_FAULT, &faultValue);
     *faultData = faultValue;
 }
@@ -110,7 +109,7 @@ void Max31865::clearFaultRegister() {
     write(REGISTER_CONFIG, &m_configFaultClear);
 }
 
-void Max31865::write(byte address, byte *data) {
+void Max31865::write(uint8_t address, uint8_t *data) {
     address |= 0x80;
     SPI.beginTransaction(m_max31865Setting);
     digitalWrite(m_cs, LOW);
@@ -120,7 +119,7 @@ void Max31865::write(byte address, byte *data) {
     SPI.endTransaction();
 }
 
-void Max31865::read8(byte address, byte *data) {
+void Max31865::read8(uint8_t address, uint8_t *data) {
     SPI.beginTransaction(m_max31865Setting);
     digitalWrite(m_cs, LOW);
     SPI.transfer(address);
@@ -129,9 +128,9 @@ void Max31865::read8(byte address, byte *data) {
     SPI.endTransaction();
 }
 
-void Max31865::read16(byte address, unsigned int *data) {
-    byte dataMSB = 0x0;
-    byte dataLSB = 0x0;
+void Max31865::read16(uint8_t address, uint16_t *data) {
+    uint8_t dataMSB = 0x0;
+    uint8_t dataLSB = 0x0;
     SPI.beginTransaction(m_max31865Setting);
     digitalWrite(m_cs, LOW);
     SPI.transfer(address);

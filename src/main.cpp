@@ -8,12 +8,12 @@
 #define R_NOMINAL 100.0        // The 'nominal' 0-degrees-C resistance of the sensor: 100.0 for PT100, 1000.0 for PT1000
 #define SAMPLE_INTERVAL 500    // The interval between 2 temperature measurement
 
-word rtdData = 0;             // Variable to store last readed MAX31865 RTD register RTD resistance data (RTD MSB resister and RTD LSB register bit 7 to 1)
+uint16_t rtdData = 0;         // Variable to store last read MAX31865 RTD register RTD resistance data
 bool faultBit = 0;            // Variable to store last readed RTD register fault bit (bit 0 of RTD LSB register)
 float ratio = 0;              // Variable to store the last readed MAX31865 ratio converted into float
 float resistance = 0;         // Variable to store the last RTD resistance value calculated from the ratio
 float temperature = 0;        // Variable to store the last temperature value calculated from resistance value
-byte faultRegister = 0;       // Variable to store MAX31865 fault resister if 10 concecutives faults are detected
+uint8_t faultRegister = 0;    // Variable to store MAX31865 fault register if 10 consecutive faults are detected
 
 Max31865 thermo(MAX31865_CS_Pin,REF_RESISTOR, R_NOMINAL); // Create an object of Max31865 class
 
