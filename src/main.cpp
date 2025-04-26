@@ -15,7 +15,7 @@ float resistance = 0;         // Variable to store the last RTD resistance value
 float temperature = 0;        // Variable to store the last temperature value calculated from resistance value
 byte faultRegister = 0;       // Variable to store MAX31865 fault resister if 10 concecutives faults are detected
 
-Max31865 thermo(MAX31865_CS_Pin); // Create an object of Max31865 class
+Max31865 thermo(MAX31865_CS_Pin,REF_RESISTOR, R_NOMINAL); // Create an object of Max31865 class
 
 void setup() {
     Serial.begin(115200);
@@ -24,7 +24,7 @@ void setup() {
         // wait for Arduino Serial Monitor to be ready
     }
 
-    if (!thermo.init(WIRE, FILTER_FREQ, REF_RESISTOR, R_NOMINAL)) { // Use the init method of the thermo object
+    if (!thermo.config(WIRE, FILTER_FREQ)) { // Use the init method of the thermo object
         Serial.println("MAX31865 Init fail");
         while (1) {
             delay(1000); // If init failed, stop program execution here

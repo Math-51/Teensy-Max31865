@@ -1,10 +1,8 @@
 #include "max31865.h"
 
-Max31865::Max31865(int cs) : m_cs(cs), m_configInit(0b0), m_configVbias(0b0), m_config1Shot(0b0), m_configFaultClear(0b0), m_refResistor(0), m_rtdNominal(0), m_max31865Setting(1000000, MSBFIRST, SPI_MODE1) {}
+Max31865::Max31865(int cs, float refResistor, float rtdNominal) : m_cs(cs), m_configInit(0b0), m_configVbias(0b0), m_config1Shot(0b0), m_configFaultClear(0b0), m_refResistor(refResistor), m_rtdNominal(rtdNominal), m_max31865Setting(1000000, MSBFIRST, SPI_MODE1) {}
 
-bool Max31865::init(int wire, int freq, float ref, float rtd) {
-    m_refResistor = ref;
-    m_rtdNominal = rtd;
+bool Max31865::config(int wire, int filterFreq) {
 
     SPI.begin();
     pinMode(m_cs, OUTPUT);
@@ -16,9 +14,9 @@ bool Max31865::init(int wire, int freq, float ref, float rtd) {
         while (1);
     }
 
-    if (freq == 50)
+    if (filterFreq == 50)
         m_configInit |= 0b00000001;
-    else if (freq != 60) {
+    else if (filterFreq != 60) {
         Serial.println("Frequency selection error");
         while (1);
     }
@@ -29,11 +27,8 @@ bool Max31865::init(int wire, int freq, float ref, float rtd) {
 
     write(REGISTER_CONFIG, &m_configInit);
 
-    byte configInitRead = 0xFF;
+    byte configInitRead = 0;
     read8(REGISTER_CONFIG, &configInitRead);
-
-    Serial.println(m_configInit, BIN);
-    Serial.println(configInitRead, BIN);
 
     return m_configInit == configInitRead;
 }

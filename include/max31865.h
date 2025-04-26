@@ -28,8 +28,8 @@ private:
     void read16(byte address, unsigned int *data);
 
 public:
-    Max31865(int cs);
-    bool init(int wire = 3, int freq = 50, float ref = 4300, float rtd = 1000);
+    Max31865(int cs, float refResistor, float rtdNominal);
+    bool config(int wire = 3, int filterFreq = 50);
     void readRTD(word *rtd, bool *fault);
     void calculate(float data, float *rt, float *temp, float *R);
     void calculateAlt(float data, float *rt, float *temp, float *R);
