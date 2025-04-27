@@ -74,7 +74,7 @@ void Max31865::continusReadRTD(uint16_t *rtd, bool *fault) {
     *fault = rtdRegister & 0x1;
 }
 
-void Max31865::calculate(float data, float *ratio, float *temperature, float *R) {
+void Max31865::calculateTemperatureAdAlgo(float data, float *ratio, float *temperature, float *R) {
     float Z1, Z2, Z3, Z4;
 
     data /= 32768;
@@ -110,7 +110,7 @@ void Max31865::calculate(float data, float *ratio, float *temperature, float *R)
     *temperature += 1.5243e-10 * rpoly;
 }
 
-void Max31865::calculateAlt(float data, float *ratio, float *temperature, float *R) {
+void Max31865::calculateTemperaturePT100Algo(float data, float *ratio, float *temperature, float *R) {
     data /= 32768;
     *ratio = data;
     data *= m_refResistor;

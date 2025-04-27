@@ -38,8 +38,8 @@ public:
     bool disableContinuousMode();
     void oneShotReadRTD(uint16_t *rtd, bool *fault);
     void continusReadRTD(uint16_t *rtd, bool *fault);
-    void calculate(float data, float *rt, float *temp, float *R);
-    void calculateAlt(float data, float *rt, float *temp, float *R);
+    void calculateTemperatureAdAlgo(float data, float *rt, float *temp, float *R);
+    void calculateTemperaturePT100Algo(float data, float *rt, float *temp, float *R);
     void readFault(uint8_t *faultData);
     void clearFaultRegister();
 };

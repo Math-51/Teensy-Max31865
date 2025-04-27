@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "max31865.h"
 
-// #define CONTINUS
+#define CONTINUS
 #define SAMPLE_INTERVAL_CONTINUOUS 20 // The interval between 2 temperature measurement in continuous mode
 #define SAMPLE_INTERVAL_1SHOT 500    // The interval between 2 temperature measurement
 #define MAX31865_CS_Pin 10     // The CS Pin for MAX31865: to change depending on PIN number of microcontroler used as MAX31865 CS pin
@@ -55,7 +55,7 @@ void loop() {
     thermo.oneShotReadRTD(&rtdData, &faultBit); // Use the readRTD method of the thermo object
     #endif
 
-    thermo.calculate(rtdData, &ratio, &temperature, &resistance); // Use the calculate method of the thermo object
+    thermo.calculateTemperatureAdAlgo(rtdData, &ratio, &temperature, &resistance); // Use the calculate method of the thermo object
 
     if (faultBit) { 
         thermo.readFault(&faultRegister); // Use the readFault method of the thermo object
@@ -65,7 +65,7 @@ void loop() {
     Serial.print("Temperature = ");
     Serial.println(temperature); // Send temperature value in float to serial
 
-    thermo.calculateAlt(rtdData, &ratio, &temperature, &resistance); // Use the calculateAlt method of the thermo object
+    thermo.calculateTemperaturePT100Algo(rtdData, &ratio, &temperature, &resistance); // Use the calculateAlt method of the thermo object
     Serial.print("Temperature (alt) = ");
     Serial.println(temperature); // Send temperature value in float to serial
 
