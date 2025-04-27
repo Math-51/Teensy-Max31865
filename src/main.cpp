@@ -20,7 +20,7 @@ void setup() {
     }
 
     if (!thermo.config(WIRE, FILTER_FREQ)) { // Use the init method of the thermo object
-        Serial.println("MAX31865 Init fail");
+        Serial.println("MAX31865 init fail");
         while (1) {
             delay(1000); // If init failed, stop program execution here
         }
