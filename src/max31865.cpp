@@ -41,6 +41,8 @@ bool Max31865::enableContinuousMode(){
     uint8_t configInitRead = 0;
     read8(REGISTER_CONFIG, &configInitRead);
 
+    delay(70); // Wait for the first reading to be ready
+
     return m_configInit == configInitRead;
 }
 
