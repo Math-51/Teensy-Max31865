@@ -29,7 +29,7 @@ void setup() {
 
     #ifdef CONTINUS
     if (!thermo.enableContinuousMode()) { // Use the enableContinuousMode method of the thermo object
-        Serial.println("MAX31865 Continuous mode fail");
+        Serial.println("MAX31865 continuous mode fail");
         while (1) {
             delay(1000); // If continuous mode failed, stop program execution here
         }
