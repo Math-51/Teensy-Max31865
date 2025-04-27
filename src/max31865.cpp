@@ -41,6 +41,13 @@ bool Max31865::enableContinuousMode(){
     uint8_t configInitRead = 0;
     read8(REGISTER_CONFIG, &configInitRead);
 
+    Serial.print("m_configInit: ");
+    Serial.println(m_configInit, BIN);
+    Serial.print("configInitRead: ");
+    Serial.println(configInitRead, BIN);   
+    Serial.print("m_configFaultClear: ");
+    Serial.println(m_configFaultClear, BIN);
+
     return m_configInit == configInitRead;
 }
 

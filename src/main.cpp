@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "max31865.h"
 
+#define CONTINUS
 #define MAX31865_CS_Pin 10     // The CS Pin for MAX31865: to change depending on PIN number of microcontroler used as MAX31865 CS pin
 #define WIRE 2                 // The number of wires of the RTD (2, 3 or 4, depending on the wires number of the RTD sensor)
 #define FILTER_FREQ 50         // Filter frequency of the MAX31865 (50Hz or 60Hz)
@@ -25,10 +26,19 @@ void setup() {
     }
     Serial.println("MAX31865 init OK"); // If MAX31865 init succeed , send a serial message to confirm the init of MAX31865
 
+    #ifdef CONTINUS
+    if (!thermo.enableContinuousMode()) { // Use the enableContinuousMode method of the thermo object
+        Serial.println("MAX31865 Continuous mode fail");
+        while (1) {
+            delay(1000); // If continuous mode failed, stop program execution here
+        }
+    }
+    Serial.println("MAX31865 Continuous mode OK"); // If continuous mode succeed, send a serial message to confirm the continuous mode of MAX31865
+    #endif
+
 }
 
 void loop() {
-
     static uint16_t rtdData = 0;         // Variable to store last read MAX31865 RTD register RTD resistance data
     static bool faultBit = 0;            // Variable to store last readed RTD register fault bit (bit 0 of RTD LSB register)
     static float ratio = 0;              // Variable to store the last readed MAX31865 ratio converted into float
@@ -36,7 +46,13 @@ void loop() {
     static float temperature = 0;        // Variable to store the last temperature value calculated from resistance value
     static uint8_t faultRegister = 0;    // Variable to store MAX31865 fault register if 10 consecutive faults are detected
 
+    #ifdef CONTINUS
+    thermo.continusReadRTD(&rtdData, &faultBit); // Use the continusReadRTD method of the thermo object
+    #endif
+
+    #ifndef CONTINUS
     thermo.oneShotReadRTD(&rtdData, &faultBit); // Use the readRTD method of the thermo object
+    #endif
 
     thermo.calculate(rtdData, &ratio, &temperature, &resistance); // Use the calculate method of the thermo object
 
