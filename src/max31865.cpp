@@ -33,7 +33,29 @@ bool Max31865::config(uint8_t wire, uint8_t filterFreq) {
     return m_configInit == configInitRead;
 }
 
-void Max31865::readRTD(uint16_t *rtd, bool *fault) {
+bool Max31865::enableContinuousMode(){
+    m_configInit |= 0b11000000;
+    m_configFaultClear = m_configInit | 0b00000010;
+    write(REGISTER_CONFIG, &m_configInit);
+    
+    uint8_t configInitRead = 0;
+    read8(REGISTER_CONFIG, &configInitRead);
+
+    return m_configInit == configInitRead;
+}
+
+bool Max31865::disableContinuousMode(){
+    m_configInit &= 0b00010001;
+    m_configFaultClear = m_configInit | 0b00000010;
+    write(REGISTER_CONFIG, &m_configInit);
+    
+    uint8_t configInitRead = 0;
+    read8(REGISTER_CONFIG, &configInitRead);
+
+    return m_configInit == configInitRead;
+}
+
+void Max31865::oneShotReadRTD(uint16_t *rtd, bool *fault) {
     uint16_t rtdRegister = 0x0;
     write(REGISTER_CONFIG, &m_configVbias);
     delay(10);
@@ -41,6 +63,13 @@ void Max31865::readRTD(uint16_t *rtd, bool *fault) {
     delay(65);
     read16(REGISTER_RTD, &rtdRegister);
     write(REGISTER_CONFIG, &m_configInit);
+    *rtd = rtdRegister >> 1;
+    *fault = rtdRegister & 0x1;
+}
+
+void Max31865::continusReadRTD(uint16_t *rtd, bool *fault) {
+    uint16_t rtdRegister = 0x0;
+    read16(REGISTER_RTD, &rtdRegister);
     *rtd = rtdRegister >> 1;
     *fault = rtdRegister & 0x1;
 }

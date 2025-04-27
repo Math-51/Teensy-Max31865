@@ -34,7 +34,10 @@ private:
 public:
     Max31865(uint8_t cs, float refResistor, float rtdNominal);
     bool config(uint8_t wire = 3, uint8_t filterFreq = 50);
-    void readRTD(uint16_t *rtd, bool *fault);
+    bool enableContinuousMode();
+    bool disableContinuousMode();
+    void oneShotReadRTD(uint16_t *rtd, bool *fault);
+    void continusReadRTD(uint16_t *rtd, bool *fault);
     void calculate(float data, float *rt, float *temp, float *R);
     void calculateAlt(float data, float *rt, float *temp, float *R);
     void readFault(uint8_t *faultData);
