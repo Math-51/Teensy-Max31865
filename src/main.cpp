@@ -34,8 +34,10 @@ void setup() {
             delay(1000); // If continuous mode failed, stop program execution here
         }
     }
-    Serial.println("MAX31865 Continuous mode OK"); // If continuous mode succeed, send a serial message to confirm the continuous mode of MAX31865
+    Serial.println("MAX31865 continuous mode OK"); // If continuous mode succeed, send a serial message to confirm the continuous mode of MAX31865
     #endif
+
+    Serial.println("Temperature AD algo,Temperature PT100 algo,fault"); // Send a serial message
 
 }
 
@@ -62,14 +64,14 @@ void loop() {
         thermo.clearFaultRegister(); // Use the clearFaultRegister method of the thermo object
     }
 
-    Serial.print("Temperature = ");
-    Serial.println(temperature); // Send temperature value in float to serial
+    Serial.print(temperature); // Send temperature value in float to serial
+    Serial.print(",");
 
     thermo.calculateTemperaturePT100Algo(rtdData, &ratio, &temperature, &resistance); // Use the calculateAlt method of the thermo object
-    Serial.print("Temperature (alt) = ");
-    Serial.println(temperature); // Send temperature value in float to serial
+    Serial.print(temperature); // Send temperature value in float to serial
+    Serial.print(",");
 
-    Serial.print("Fault = 0x");
+    Serial.print("0x");
     Serial.println(faultRegister, HEX); // Send fault register value in HEX to serial
 
     #ifdef CONTINUS
