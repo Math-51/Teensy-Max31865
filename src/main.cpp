@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "max31865.h"
 
-#define CONTINUS
+// #define CONTINUS
 #define MAX31865_CS_Pin 10     // The CS Pin for MAX31865: to change depending on PIN number of microcontroler used as MAX31865 CS pin
 #define WIRE 2                 // The number of wires of the RTD (2, 3 or 4, depending on the wires number of the RTD sensor)
 #define FILTER_FREQ 50         // Filter frequency of the MAX31865 (50Hz or 60Hz)
@@ -47,6 +47,7 @@ void loop() {
     static uint8_t faultRegister = 0;    // Variable to store MAX31865 fault register if 10 consecutive faults are detected
 
     #ifdef CONTINUS
+    unsigned long startTime = millis(); // Start time for the measurement
     thermo.continusReadRTD(&rtdData, &faultBit); // Use the continusReadRTD method of the thermo object
     #endif
 
@@ -71,5 +72,14 @@ void loop() {
     Serial.print("Fault = 0x");
     Serial.println(faultRegister, HEX); // Send fault register value in HEX to serial
 
+    #ifdef CONTINUS
+    unsigned long elapsedTime = millis() - startTime; // Calculate elapsed time for the measurement
+    Serial.print("Elapsed time = ");
+    Serial.print(elapsedTime); // Send elapsed time in ms to serial
+    Serial.println(" ms"); // Send elapsed time in ms to serial
+    #endif
+
+    #ifndef CONTINUS
     delay(SAMPLE_INTERVAL);
+    #endif
 }
