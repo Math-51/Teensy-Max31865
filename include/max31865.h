@@ -33,7 +33,7 @@ private:
 
 public:
     Max31865(uint8_t cs, float refResistor, float rtdNominal);
-    bool config(uint8_t wire = 3, uint8_t filterFreq = 50);
+    bool config(uint8_t wire, uint8_t filterFreq);
     bool enableContinuousMode();
     bool disableContinuousMode();
     void oneShotReadRTD(uint16_t *rtd, bool *fault);
